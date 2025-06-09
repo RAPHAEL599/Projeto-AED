@@ -1,0 +1,5 @@
+# depslib dependency file v1.0
+1749071498 source:f:\puc minas\1 periodo\lab aed 1\teste1\main.cpp
+	"raylib.h"
+	<emscripten/emscripten.h>
+
