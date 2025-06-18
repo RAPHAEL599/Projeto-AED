@@ -4,12 +4,27 @@
 
 #define LARGURA_TELA 800
 #define ALTURA_TELA 600
+#define MAX_PLATAFORMAS 20 // Definindo limites para os vetores na struct
+#define MAX_PERIGOS 10
+#define MAX_PORTAS 2
 
 // --- Estruturas de Dados ---
 
-typedef enum { JOGANDO, FIM_DE_JOGO, VITORIA } EstadoJogo;
-typedef enum { FOGO, AGUA } TipoPerigo;
-typedef enum { JOGADOR_FOGO, JOGADOR_AGUA } TipoJogador;
+typedef enum {
+    JOGANDO,
+    FIM_DE_JOGO,
+    VITORIA
+} EstadoJogo;
+
+typedef enum {
+    FOGO,
+    AGUA
+} TipoPerigo;
+
+typedef enum {
+    JOGADOR_FOGO,
+    JOGADOR_AGUA
+} TipoJogador;
 
 typedef struct Jogador {
     TipoJogador tipo;
@@ -35,65 +50,116 @@ typedef struct Porta {
     Color cor;
 } Porta;
 
+typedef struct Fase {
+    Plataforma plataformas[MAX_PLATAFORMAS];
+    Perigo perigos[MAX_PERIGOS];
+    Porta portas[MAX_PORTAS];
+    int numPlataformas;
+    int numPerigos;
+    int numPortas;
+    Vector2 posInicialFogo;
+    Vector2 posInicialAgua;
+} Fase;
+
+
 // --- Funções de Ajuda ---
 void AtualizarJogador(Jogador *jogador, Plataforma plataformas[], int numPlataformas, float gravidade);
+void CarregarFase(Fase fase, Jogador *meninoFogo, Jogador *meninaAgua, Plataforma plataformas[], int *numPlataformas, Perigo perigos[],
+                  int *numPerigos, Porta portas[], int *numPortas);
+
 
 // --- Função Principal ---
 int main(void) {
     // Inicialização
-    InitWindow(LARGURA_TELA, ALTURA_TELA, "Menino Fogo e Menina Água - Nível Ajustado");
+    InitWindow(LARGURA_TELA, ALTURA_TELA, "Menino Fogo e Menina Água - Múltiplas Fases");
+
+    // --- DEFINIÇÃO DE TODAS AS FASES DO JOGO ---
+    Fase fases[] = {
+        // --- FASE 1 ---
+        {
+            .plataformas = {
+                // 1. Caminho de baixo (Esquerda -> Direita) - Sem alterações
+                {{ 0, 550, LARGURA_TELA, 50 }},
+
+                // 2. Caminho do meio (Direita -> Esquerda)
+                // CORREÇÃO: Começa na esquerda e deixa o buraco na DIREITA para subir.
+                {{ 0, 400, LARGURA_TELA - 100, 20 }},
+
+                // 3. Caminho de cima (Esquerda -> Direita), onde ficam as portas
+                // CORREÇÃO: Começa depois da borda e deixa o buraco na ESQUERDA para subir.
+                {{ 100, 250, LARGURA_TELA - 100, 20 }}
+            },
+            .perigos = {
+                // Perigo no caminho de baixo
+                {{ 300, 530, 150, 20 }, AGUA, SKYBLUE},
+
+                // Perigo no caminho do meio
+                {{ 300, 380, 150, 20 }, FOGO, RED}
+            },
+            .portas = {
+                {{ LARGURA_TELA - 120, 210, 40, 40 }, JOGADOR_FOGO, (Color){ 255, 100, 100, 255 }},
+                {{ LARGURA_TELA - 70, 210, 40, 40 }, JOGADOR_AGUA, (Color){ 100, 100, 255, 255 }}
+            },
+            .numPlataformas = 3,
+            .numPerigos = 2,
+            .numPortas = 2,
+            .posInicialFogo = { 60, 540 },
+            .posInicialAgua = { 100, 540 }
+        },
+        // --- FASE 2 ---
+        {
+            .plataformas = {
+                // 1. Caminho de cima (Esquerda -> Direita) com buraco na DIREITA para descer.
+                {{ 0, 250, LARGURA_TELA - 100, 20 }},
+
+                // 2. Caminho do meio (Direita -> Esquerda) com buraco na ESQUERDA para descer.
+                {{ 100, 400, LARGURA_TELA - 100, 20 }},
+
+                // 3. Caminho de baixo (Esquerda -> Direita), o chão final.
+                {{ 0, 550, LARGURA_TELA, 50 }}
+            },
+            .perigos = {
+                // Perigo no caminho de cima
+                {{ 300, 230, 150, 20 }, AGUA, SKYBLUE},
+                // Perigo no caminho do meio
+                {{ 300, 380, 150, 20 }, FOGO, RED}
+            },
+            .portas = {
+                // Portas no canto inferior direito, no final do percurso
+                {{ LARGURA_TELA - 120, 510, 40, 40 }, JOGADOR_FOGO, (Color){ 255, 100, 100, 255 }},
+                {{ LARGURA_TELA - 70, 510, 40, 40 }, JOGADOR_AGUA, (Color){ 100, 100, 255, 255 }}
+            },
+            .numPlataformas = 3,
+            .numPerigos = 2,
+            .numPortas = 2,
+            // Começam no canto superior esquerdo, na primeira plataforma
+            .posInicialFogo = { 60, 240 },
+            .posInicialAgua = { 100, 240 }
+        }
+    };
+    int numTotalFases = sizeof(fases) / sizeof(fases[0]);
+    int faseAtualIndex = 0;
 
     // Estado do Jogo
     EstadoJogo estadoJogo = JOGANDO;
 
-    // --- LINHAS CORRIGIDAS ---
-    Jogador meninoFogo = { JOGADOR_FOGO }; // Corrigido para evitar conversão inválida
-    meninoFogo.tipo = JOGADOR_FOGO;
-    meninoFogo.posicao = (Vector2){ 80, 550 };
-    meninoFogo.cor = MAROON;
-    meninoFogo.podePular = false;
+    // Jogadores
+    Jogador meninoFogo = { JOGADOR_FOGO, {0,0}, {0,0}, MAROON, false };
+    Jogador meninaAgua = { JOGADOR_AGUA, {0,0}, {0,0}, BLUE, false };
 
-    Jogador meninaAgua = { JOGADOR_AGUA }; // Corrigido para evitar conversão inválida
-    meninaAgua.tipo = JOGADOR_AGUA;
-    meninaAgua.posicao = (Vector2){ LARGURA_TELA - 80, 550 };
-    meninaAgua.cor = BLUE;
-    meninaAgua.podePular = false;
+    // Vetores da fase atual (serão preenchidos pela função CarregarFase)
+    Plataforma plataformasAtuais[MAX_PLATAFORMAS];
+    Perigo perigosAtuais[MAX_PERIGOS];
+    Porta portasAtuais[MAX_PORTAS];
+    int numPlataformasAtuais, numPerigosAtuais, numPortasAtuais;
 
+    // Carregar a primeira fase
+    CarregarFase(fases[faseAtualIndex], &meninoFogo, &meninaAgua, plataformasAtuais, &numPlataformasAtuais, perigosAtuais, &numPerigosAtuais, portasAtuais, &numPortasAtuais);
 
-    // --- LEVEL DESIGN AJUSTADO PARA SER POSSÍVEL ---
-    Plataforma plataformas[] = {
-        {{ 0, 550, LARGURA_TELA, 50 }},      // Chão
-        {{ 50, 480, 120, 20 }},             // 1. Esquerda-Baixo (pulo de 70px de altura)
-        {{ LARGURA_TELA - 170, 480, 120, 20 }}, // 1. Direita-Baixo
-        {{ 200, 410, 120, 20 }},            // 2. Esquerda-Meio (pulo de 70px de altura)
-        {{ LARGURA_TELA - 320, 410, 120, 20 }}, // 2. Direita-Meio
-        {{ 50, 340, 120, 20 }},             // 3. Esquerda-Alto (pulo de 70px de altura)
-        {{ LARGURA_TELA - 170, 340, 120, 20 }}, // 3. Direita-Alto
-        {{ 250, 280, 300, 20 }},            // 4. Plataforma Central, para encontro
-        {{ 325, 230, 150, 20 }}              // 5. Plataforma Final (MAIS BAIXA E MAIS LARGA)
-    };
-    int numPlataformas = sizeof(plataformas)/sizeof(plataformas[0]);
-
-    Perigo perigos[] = {
-        {{ 250, 530, 100, 20 }, FOGO, RED},
-        {{ LARGURA_TELA - 350, 530, 100, 20 }, AGUA, SKYBLUE}
-    };
-    int numPerigos = sizeof(perigos)/sizeof(perigos[0]);
-
-    Porta portas[] = {
-        {{ 360, 190, 40, 40 }, JOGADOR_FOGO, (Color){ 255, 100, 100, 255 }},
-        {{ 410, 190, 40, 40 }, JOGADOR_AGUA, (Color){ 100, 100, 255, 255 }}
-    };
-    int numPortas = sizeof(portas)/sizeof(portas[0]);
-    // --- FIM DO LEVEL DESIGN ---
-
-
-    // --- PARÂMETROS DE DIFICULDADE (PULO MENOR) ---
-    const float gravidade = 0.7f;
+    // Parâmetros de física
+    const float gravidade = 0.10f;
     const float velocidadeMovimento = 4.0f;
-    const float forcaPulo = -11.0f;
-    // --- FIM DOS PARÂMETROS DE DIFICULDADE ---
-
+    const float forcaPulo = -5.8f;
 
     // Variáveis de estado para a vitória
     bool fogoNaPorta = false;
@@ -104,18 +170,15 @@ int main(void) {
     // Loop principal do jogo
     while (!WindowShouldClose()) {
         // --- ATUALIZAÇÃO ---
-
         switch (estadoJogo) {
             case JOGANDO: {
-                // Controles Menino Fogo (WASD)
+                // Controles dos jogadores (sem alteração)
                 if (IsKeyDown(KEY_A)) meninoFogo.posicao.x -= velocidadeMovimento;
                 if (IsKeyDown(KEY_D)) meninoFogo.posicao.x += velocidadeMovimento;
                 if (IsKeyPressed(KEY_W) && meninoFogo.podePular) {
                     meninoFogo.velocidade.y = forcaPulo;
                     meninoFogo.podePular = false;
                 }
-
-                // Controles Menina Água (Setas)
                 if (IsKeyDown(KEY_LEFT)) meninaAgua.posicao.x -= velocidadeMovimento;
                 if (IsKeyDown(KEY_RIGHT)) meninaAgua.posicao.x += velocidadeMovimento;
                 if (IsKeyPressed(KEY_UP) && meninaAgua.podePular) {
@@ -123,116 +186,135 @@ int main(void) {
                     meninaAgua.podePular = false;
                 }
 
-                // Atualizar física e colisões dos jogadores
-                AtualizarJogador(&meninoFogo, plataformas, numPlataformas, gravidade);
-                AtualizarJogador(&meninaAgua, plataformas, numPlataformas, gravidade);
 
-                // Verificar colisões com perigos
-                for (int i = 0; i < numPerigos; i++) {
+                // Atualizar física e colisões (usando os vetores da fase atual)
+                AtualizarJogador(&meninoFogo, plataformasAtuais, numPlataformasAtuais, gravidade);
+                AtualizarJogador(&meninaAgua, plataformasAtuais, numPlataformasAtuais, gravidade);
+
+                // Verificar colisões com perigos (usando os vetores da fase atual)
+                for (int i = 0; i < numPerigosAtuais; i++) {
                     Rectangle retanguloJogadorFogo = { meninoFogo.posicao.x - 10, meninoFogo.posicao.y - 20, 20, 20 };
                     Rectangle retanguloMeninaAgua = { meninaAgua.posicao.x - 10, meninaAgua.posicao.y - 20, 20, 20 };
 
-                    if (perigos[i].tipo == AGUA && CheckCollisionRecs(retanguloJogadorFogo, perigos[i].retangulo)) {
+                    if (perigosAtuais[i].tipo == AGUA && CheckCollisionRecs(retanguloJogadorFogo, perigosAtuais[i].retangulo)) {
                         estadoJogo = FIM_DE_JOGO;
                     }
-                    if (perigos[i].tipo == FOGO && CheckCollisionRecs(retanguloMeninaAgua, perigos[i].retangulo)) {
+                    if (perigosAtuais[i].tipo == FOGO && CheckCollisionRecs(retanguloMeninaAgua, perigosAtuais[i].retangulo)) {
                         estadoJogo = FIM_DE_JOGO;
                     }
                 }
 
-                // Verificar condição de vitória
-                fogoNaPorta = CheckCollisionRecs((Rectangle){ meninoFogo.posicao.x - 10, meninoFogo.posicao.y - 20, 20, 20 }, portas[0].retangulo);
-                aguaNaPorta = CheckCollisionRecs((Rectangle){ meninaAgua.posicao.x - 10, meninaAgua.posicao.y - 20, 20, 20 }, portas[1].retangulo);
+                // Verificar condição de vitória (usando os vetores da fase atual)
+                // É importante que portasAtuais[0] seja a porta do FOGO e portasAtuais[1] seja a da ÁGUA
+                fogoNaPorta = CheckCollisionRecs((Rectangle){ meninoFogo.posicao.x - 10, meninoFogo.posicao.y - 20, 20, 20 }, portasAtuais[0].retangulo);
+                aguaNaPorta = CheckCollisionRecs((Rectangle){ meninaAgua.posicao.x - 10, meninaAgua.posicao.y - 20, 20, 20 }, portasAtuais[1].retangulo);
 
                 if (fogoNaPorta && aguaNaPorta) {
                     estadoJogo = VITORIA;
                 }
-
             } break;
 
             case FIM_DE_JOGO: {
                 if (IsKeyPressed(KEY_ENTER)) {
-                    // Resetar jogo
-                    meninoFogo.posicao = (Vector2){ 80, 550 };
-                    meninaAgua.posicao = (Vector2){ LARGURA_TELA - 80, 550 };
-                    meninoFogo.velocidade = (Vector2){0};
-                    meninaAgua.velocidade = (Vector2){0};
+                    // Resetar a fase atual
+                    CarregarFase(fases[faseAtualIndex], &meninoFogo, &meninaAgua, plataformasAtuais, &numPlataformasAtuais, perigosAtuais, &numPerigosAtuais, portasAtuais, &numPortasAtuais);
                     estadoJogo = JOGANDO;
                 }
             } break;
 
             case VITORIA: {
                  if (IsKeyPressed(KEY_ENTER)) {
-                    // Resetar jogo (ou ir para próximo nível)
-                    meninoFogo.posicao = (Vector2){ 80, 550 };
-                    meninaAgua.posicao = (Vector2){ LARGURA_TELA - 80, 550 };
-                    meninoFogo.velocidade = (Vector2){0};
-                    meninaAgua.velocidade = (Vector2){0};
-                    estadoJogo = JOGANDO;
+                    faseAtualIndex++; // Avança para a próxima fase
+                    if (faseAtualIndex < numTotalFases) {
+                        // Carrega a próxima fase
+                        CarregarFase(fases[faseAtualIndex], &meninoFogo, &meninaAgua, plataformasAtuais, &numPlataformasAtuais, perigosAtuais, &numPerigosAtuais, portasAtuais, &numPortasAtuais);
+                        estadoJogo = JOGANDO;
+                    } else {
+                        // Fim de jogo (ganhou todas as fases)
+                        CloseWindow();
+                    }
                 }
             } break;
         }
 
         // --- DESENHO ---
         BeginDrawing();
-            ClearBackground((Color){240, 240, 240, 255}); // Fundo cinza claro
+            ClearBackground((Color){240, 240, 240, 255});
 
             // Desenhar elementos do nível
-            for (int i = 0; i < numPlataformas; i++) DrawRectangleRec(plataformas[i].retangulo, DARKGRAY);
-            for (int i = 0; i < numPerigos; i++) DrawRectangleRec(perigos[i].retangulo, perigos[i].cor);
-            for (int i = 0; i < numPortas; i++) DrawRectangleRec(portas[i].retangulo, portas[i].cor);
+            for (int i = 0; i < numPlataformasAtuais; i++) DrawRectangleRec(plataformasAtuais[i].retangulo, DARKGRAY);
+            for (int i = 0; i < numPerigosAtuais; i++) DrawRectangleRec(perigosAtuais[i].retangulo, perigosAtuais[i].cor);
+            for (int i = 0; i < numPortasAtuais; i++) DrawRectangleRec(portasAtuais[i].retangulo, portasAtuais[i].cor);
 
             // Desenhar jogadores
             DrawRectangle(meninoFogo.posicao.x - 10, meninoFogo.posicao.y - 20, 20, 20, meninoFogo.cor);
             DrawRectangle(meninaAgua.posicao.x - 10, meninaAgua.posicao.y - 20, 20, 20, meninaAgua.cor);
 
             // Desenhar UI e mensagens de estado
+            DrawText((TextFormat("Fase %d", faseAtualIndex + 1)), LARGURA_TELA - 100, 10, 20, LIGHTGRAY);
             if (estadoJogo == JOGANDO) {
                 DrawText("Fogo: WASD | Agua: Setas", 10, 10, 20, DARKGRAY);
             } else if (estadoJogo == FIM_DE_JOGO) {
                 DrawText("FIM DE JOGO", GetScreenWidth()/2 - MeasureText("FIM DE JOGO", 40)/2, GetScreenHeight()/2 - 40, 40, GRAY);
-                DrawText("Pressione ENTER para reiniciar", GetScreenWidth()/2 - MeasureText("Pressione ENTER para reiniciar", 20)/2, GetScreenHeight()/2 + 10, 20, GRAY);
+                DrawText("Pressione ENTER para reiniciar a fase", GetScreenWidth()/2 - MeasureText("Pressione ENTER para reiniciar a fase", 20)/2, GetScreenHeight()/2 + 10, 20, GRAY);
             } else if (estadoJogo == VITORIA) {
                 DrawText("VITORIA!", GetScreenWidth()/2 - MeasureText("VITORIA!", 40)/2, GetScreenHeight()/2 - 40, 40, GOLD);
-                DrawText("Pressione ENTER para reiniciar", GetScreenWidth()/2 - MeasureText("Pressione ENTER para reiniciar", 20)/2, GetScreenHeight()/2 + 10, 20, GOLD);
+                if (faseAtualIndex + 1 < numTotalFases) {
+                    DrawText("Pressione ENTER para a proxima fase", GetScreenWidth()/2 - MeasureText("Pressione ENTER para a proxima fase", 20)/2, GetScreenHeight()/2 + 10, 20, GOLD);
+                } else {
+                    DrawText("Parabens! Voce completou o jogo!", GetScreenWidth()/2 - MeasureText("Parabens! Voce completou o jogo!", 20)/2, GetScreenHeight()/2 + 10, 20, GOLD);
+                }
             }
-
-
         EndDrawing();
     }
 
-    // Finalização
     CloseWindow();
     return 0;
 }
 
+void CarregarFase(Fase fase, Jogador *meninoFogo, Jogador *meninaAgua, Plataforma plataformas[], int *numPlataformas, Perigo perigos[], int *numPerigos, Porta portas[], int *numPortas) {
+    // Reseta a posição e velocidade dos jogadores
+    meninoFogo->posicao = fase.posInicialFogo;
+    meninaAgua->posicao = fase.posInicialAgua;
+    meninoFogo->velocidade = (Vector2){0};
+    meninaAgua->velocidade = (Vector2){0};
 
-// Função de atualização do jogador (sem alterações)
+    // Copia os dados da estrutura da fase para as variáveis de jogo
+    *numPlataformas = fase.numPlataformas;
+    for(int i = 0; i < fase.numPlataformas; i++) {
+        plataformas[i] = fase.plataformas[i];
+    }
+
+    *numPerigos = fase.numPerigos;
+    for(int i = 0; i < fase.numPerigos; i++) {
+        perigos[i] = fase.perigos[i];
+    }
+
+    *numPortas = fase.numPortas;
+    for(int i = 0; i < fase.numPortas; i++) {
+        portas[i] = fase.portas[i];
+    }
+}
+
 void AtualizarJogador(Jogador *jogador, Plataforma plataformas[], int numPlataformas, float gravidade) {
-    // Aplicar gravidade e atualizar posição Y
+    // ... (código da função original sem alterações)
     jogador->velocidade.y += gravidade;
     jogador->posicao.y += jogador->velocidade.y;
 
-    // A altura do jogador é 20. Sua posição Y é a base do retângulo (pés).
     float alturaJogador = 20.0f;
     Rectangle retanguloJogador = { jogador->posicao.x - 10, jogador->posicao.y - alturaJogador, 20, alturaJogador };
 
-    // Colisão com as plataformas
     jogador->podePular = false;
     for (int i = 0; i < numPlataformas; i++) {
         if (CheckCollisionRecs(retanguloJogador, plataformas[i].retangulo)) {
-            // Verifica colisão EM CIMA da plataforma (caindo)
             if (jogador->velocidade.y > 0 && (retanguloJogador.y + retanguloJogador.height - jogador->velocidade.y) <= plataformas[i].retangulo.y) {
-                // A posição Y (pés) do jogador deve ser igual à posição Y (topo) da plataforma.
                 jogador->posicao.y = plataformas[i].retangulo.y;
                 jogador->velocidade.y = 0;
                 jogador->podePular = true;
             }
-            // Verifica colisão EM BAIXO da plataforma (pulando)
             else if (jogador->velocidade.y < 0) {
-                // Ajusta a posição para ficar exatamente embaixo da plataforma, impedindo que atravesse
                 jogador->posicao.y = plataformas[i].retangulo.y + plataformas[i].retangulo.height + alturaJogador;
-                jogador->velocidade.y = 0; // Para o movimento vertical, fazendo o jogador "bater a cabeça" e começar a cair
+                jogador->velocidade.y = 0;
             }
         }
     }
