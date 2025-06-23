@@ -1,6 +1,7 @@
 #include "raylib.h"
 #include <stdbool.h>
 #include <stddef.h>
+//#include <stdio.h>
 
 #define LARGURA_TELA 800
 #define ALTURA_TELA 600
@@ -62,31 +63,31 @@ typedef struct Fase {
 } Fase;
 
 
-// --- Funções de Ajuda ---
+// --- Funï¿½ï¿½es de Ajuda ---
 void AtualizarJogador(Jogador *jogador, Plataforma plataformas[], int numPlataformas, float gravidade);
 void CarregarFase(Fase fase, Jogador *meninoFogo, Jogador *meninaAgua, Plataforma plataformas[], int *numPlataformas, Perigo perigos[],
                   int *numPerigos, Porta portas[], int *numPortas);
 
 
-// --- Função Principal ---
+// --- Funï¿½ï¿½o Principal ---
 int main(void) {
-    // Inicialização
-    InitWindow(LARGURA_TELA, ALTURA_TELA, "Menino Fogo e Menina Água - Múltiplas Fases");
+    // Inicializaï¿½ï¿½o
+    InitWindow(LARGURA_TELA, ALTURA_TELA, "Menino Fogo e Menina ï¿½gua - Mï¿½ltiplas Fases");
 
-    // --- DEFINIÇÃO DE TODAS AS FASES DO JOGO ---
+    // --- DEFINIï¿½ï¿½O DE TODAS AS FASES DO JOGO ---
     Fase fases[] = {
         // --- FASE 1 ---
         {
             .plataformas = {
-                // 1. Caminho de baixo (Esquerda -> Direita) - Sem alterações
+                // 1. Caminho de baixo (Esquerda -> Direita) - Sem alteraï¿½ï¿½es
                 {{ 0, 550, LARGURA_TELA, 50 }},
 
                 // 2. Caminho do meio (Direita -> Esquerda)
-                // CORREÇÃO: Começa na esquerda e deixa o buraco na DIREITA para subir.
+                // CORREï¿½ï¿½O: Comeï¿½a na esquerda e deixa o buraco na DIREITA para subir.
                 {{ 0, 400, LARGURA_TELA - 100, 20 }},
 
                 // 3. Caminho de cima (Esquerda -> Direita), onde ficam as portas
-                // CORREÇÃO: Começa depois da borda e deixa o buraco na ESQUERDA para subir.
+                // CORREï¿½ï¿½O: Comeï¿½a depois da borda e deixa o buraco na ESQUERDA para subir.
                 {{ 100, 250, LARGURA_TELA - 100, 20 }}
             },
             .perigos = {
@@ -115,7 +116,7 @@ int main(void) {
                 // 2. Caminho do meio (Direita -> Esquerda) com buraco na ESQUERDA para descer.
                 {{ 100, 400, LARGURA_TELA - 100, 20 }},
 
-                // 3. Caminho de baixo (Esquerda -> Direita), o chão final.
+                // 3. Caminho de baixo (Esquerda -> Direita), o chï¿½o final.
                 {{ 0, 550, LARGURA_TELA, 50 }}
             },
             .perigos = {
@@ -132,7 +133,37 @@ int main(void) {
             .numPlataformas = 3,
             .numPerigos = 2,
             .numPortas = 2,
-            // Começam no canto superior esquerdo, na primeira plataforma
+            // Comeï¿½am no canto superior esquerdo, na primeira plataforma
+            .posInicialFogo = { 60, 240 },
+            .posInicialAgua = { 100, 240 }
+        },
+        // --- FASE 3 ---
+        {
+            .plataformas = {
+                // 1. Caminho de cima (Esquerda -> Direita) com buraco na DIREITA para descer.
+                {{ 0, 250, LARGURA_TELA - 100, 20 }},
+
+                // 2. Caminho do meio (Direita -> Esquerda) com buraco na ESQUERDA para descer.
+                {{ 100, 400, LARGURA_TELA - 100, 20 }},
+
+                // 3. Caminho de baixo (Esquerda -> Direita), o chï¿½o final.
+                {{ 0, 550, LARGURA_TELA, 50 }}
+            },
+            .perigos = {
+                // Perigo no caminho de cima
+                {{ 300, 230, 150, 20 }, AGUA, SKYBLUE},
+                // Perigo no caminho do meio
+                {{ 300, 380, 150, 20 }, FOGO, RED}
+            },
+            .portas = {
+                // Portas no canto inferior direito, no final do percurso
+                {{ LARGURA_TELA - 120, 510, 40, 40 }, JOGADOR_FOGO, (Color){ 255, 100, 100, 255 }},
+                {{ LARGURA_TELA - 70, 510, 40, 40 }, JOGADOR_AGUA, (Color){ 100, 100, 255, 255 }}
+            },
+            .numPlataformas = 3,
+            .numPerigos = 2,
+            .numPortas = 2,
+            // Comeï¿½am no canto superior esquerdo, na primeira plataforma
             .posInicialFogo = { 60, 240 },
             .posInicialAgua = { 100, 240 }
         }
@@ -147,7 +178,7 @@ int main(void) {
     Jogador meninoFogo = { JOGADOR_FOGO, {0,0}, {0,0}, MAROON, false };
     Jogador meninaAgua = { JOGADOR_AGUA, {0,0}, {0,0}, BLUE, false };
 
-    // Vetores da fase atual (serão preenchidos pela função CarregarFase)
+    // Vetores da fase atual (serï¿½o preenchidos pela funï¿½ï¿½o CarregarFase)
     Plataforma plataformasAtuais[MAX_PLATAFORMAS];
     Perigo perigosAtuais[MAX_PERIGOS];
     Porta portasAtuais[MAX_PORTAS];
@@ -156,12 +187,12 @@ int main(void) {
     // Carregar a primeira fase
     CarregarFase(fases[faseAtualIndex], &meninoFogo, &meninaAgua, plataformasAtuais, &numPlataformasAtuais, perigosAtuais, &numPerigosAtuais, portasAtuais, &numPortasAtuais);
 
-    // Parâmetros de física
+    // Parï¿½metros de fï¿½sica
     const float gravidade = 0.10f;
     const float velocidadeMovimento = 4.0f;
     const float forcaPulo = -5.8f;
 
-    // Variáveis de estado para a vitória
+    // Variï¿½veis de estado para a vitï¿½ria
     bool fogoNaPorta = false;
     bool aguaNaPorta = false;
 
@@ -169,10 +200,10 @@ int main(void) {
 
     // Loop principal do jogo
     while (!WindowShouldClose()) {
-        // --- ATUALIZAÇÃO ---
+        // --- ATUALIZAï¿½ï¿½O ---
         switch (estadoJogo) {
             case JOGANDO: {
-                // Controles dos jogadores (sem alteração)
+                // Controles dos jogadores (sem alteraï¿½ï¿½o)
                 if (IsKeyDown(KEY_A)) meninoFogo.posicao.x -= velocidadeMovimento;
                 if (IsKeyDown(KEY_D)) meninoFogo.posicao.x += velocidadeMovimento;
                 if (IsKeyPressed(KEY_W) && meninoFogo.podePular) {
@@ -185,13 +216,22 @@ int main(void) {
                     meninaAgua.velocidade.y = forcaPulo;
                     meninaAgua.podePular = false;
                 }
+                // Sistema de Debug para pular de fase
+                // printf("%d", GetKeyPressed());
+                if (IsKeyPressed(332)) {
+                    faseAtualIndex++; // Avanï¿½a para a prï¿½xima fase
+                    if (faseAtualIndex < numTotalFases) {
+                        // Carrega a prï¿½xima fase
+                        CarregarFase(fases[faseAtualIndex], &meninoFogo, &meninaAgua, plataformasAtuais, &numPlataformasAtuais, perigosAtuais, &numPerigosAtuais, portasAtuais, &numPortasAtuais);
+                        estadoJogo = JOGANDO;
+                }}
 
 
-                // Atualizar física e colisões (usando os vetores da fase atual)
+                // Atualizar fï¿½sica e colisï¿½es (usando os vetores da fase atual)
                 AtualizarJogador(&meninoFogo, plataformasAtuais, numPlataformasAtuais, gravidade);
                 AtualizarJogador(&meninaAgua, plataformasAtuais, numPlataformasAtuais, gravidade);
 
-                // Verificar colisões com perigos (usando os vetores da fase atual)
+                // Verificar colisï¿½es com perigos (usando os vetores da fase atual)
                 for (int i = 0; i < numPerigosAtuais; i++) {
                     Rectangle retanguloJogadorFogo = { meninoFogo.posicao.x - 10, meninoFogo.posicao.y - 20, 20, 20 };
                     Rectangle retanguloMeninaAgua = { meninaAgua.posicao.x - 10, meninaAgua.posicao.y - 20, 20, 20 };
@@ -204,8 +244,8 @@ int main(void) {
                     }
                 }
 
-                // Verificar condição de vitória (usando os vetores da fase atual)
-                // É importante que portasAtuais[0] seja a porta do FOGO e portasAtuais[1] seja a da ÁGUA
+                // Verificar condiï¿½ï¿½o de vitï¿½ria (usando os vetores da fase atual)
+                // ï¿½ importante que portasAtuais[0] seja a porta do FOGO e portasAtuais[1] seja a da ï¿½GUA
                 fogoNaPorta = CheckCollisionRecs((Rectangle){ meninoFogo.posicao.x - 10, meninoFogo.posicao.y - 20, 20, 20 }, portasAtuais[0].retangulo);
                 aguaNaPorta = CheckCollisionRecs((Rectangle){ meninaAgua.posicao.x - 10, meninaAgua.posicao.y - 20, 20, 20 }, portasAtuais[1].retangulo);
 
@@ -224,9 +264,9 @@ int main(void) {
 
             case VITORIA: {
                  if (IsKeyPressed(KEY_ENTER)) {
-                    faseAtualIndex++; // Avança para a próxima fase
+                    faseAtualIndex++; // Avanï¿½a para a prï¿½xima fase
                     if (faseAtualIndex < numTotalFases) {
-                        // Carrega a próxima fase
+                        // Carrega a prï¿½xima fase
                         CarregarFase(fases[faseAtualIndex], &meninoFogo, &meninaAgua, plataformasAtuais, &numPlataformasAtuais, perigosAtuais, &numPerigosAtuais, portasAtuais, &numPortasAtuais);
                         estadoJogo = JOGANDO;
                     } else {
@@ -241,7 +281,7 @@ int main(void) {
         BeginDrawing();
             ClearBackground((Color){240, 240, 240, 255});
 
-            // Desenhar elementos do nível
+            // Desenhar elementos do nï¿½vel
             for (int i = 0; i < numPlataformasAtuais; i++) DrawRectangleRec(plataformasAtuais[i].retangulo, DARKGRAY);
             for (int i = 0; i < numPerigosAtuais; i++) DrawRectangleRec(perigosAtuais[i].retangulo, perigosAtuais[i].cor);
             for (int i = 0; i < numPortasAtuais; i++) DrawRectangleRec(portasAtuais[i].retangulo, portasAtuais[i].cor);
@@ -273,13 +313,13 @@ int main(void) {
 }
 
 void CarregarFase(Fase fase, Jogador *meninoFogo, Jogador *meninaAgua, Plataforma plataformas[], int *numPlataformas, Perigo perigos[], int *numPerigos, Porta portas[], int *numPortas) {
-    // Reseta a posição e velocidade dos jogadores
+    // Reseta a posiï¿½ï¿½o e velocidade dos jogadores
     meninoFogo->posicao = fase.posInicialFogo;
     meninaAgua->posicao = fase.posInicialAgua;
     meninoFogo->velocidade = (Vector2){0};
     meninaAgua->velocidade = (Vector2){0};
 
-    // Copia os dados da estrutura da fase para as variáveis de jogo
+    // Copia os dados da estrutura da fase para as variï¿½veis de jogo
     *numPlataformas = fase.numPlataformas;
     for(int i = 0; i < fase.numPlataformas; i++) {
         plataformas[i] = fase.plataformas[i];
@@ -297,7 +337,7 @@ void CarregarFase(Fase fase, Jogador *meninoFogo, Jogador *meninaAgua, Plataform
 }
 
 void AtualizarJogador(Jogador *jogador, Plataforma plataformas[], int numPlataformas, float gravidade) {
-    // ... (código da função original sem alterações)
+    // ... (cï¿½digo da funï¿½ï¿½o original sem alteraï¿½ï¿½es)
     jogador->velocidade.y += gravidade;
     jogador->posicao.y += jogador->velocidade.y;
 
