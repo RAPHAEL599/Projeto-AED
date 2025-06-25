@@ -65,7 +65,7 @@ typedef struct Fase {
     Vector2    posInicialAgua;
 } Fase;
 
-// ProtÛtipos
+// Prot√≥tipos
 void AtualizarJogador(Jogador *j, Plataforma plat[], int nPlat, float gravidade);
 void CarregarFase    (Fase fase, Jogador *fogo, Jogador *agua,
                       Plataforma plat[], int *nPlat,
@@ -74,15 +74,15 @@ void CarregarFase    (Fase fase, Jogador *fogo, Jogador *agua,
 void ResolverColisaoJogadores(Jogador *fogo, Jogador *agua);
 
 int main(void) {
-    InitWindow(LARGURA_TELA, ALTURA_TELA, "Menino Fogo e Menina ¡gua");
+    InitWindow(LARGURA_TELA, ALTURA_TELA, "Menino Fogo e Menina √Ågua");
 
-    // --- DefiniÁ„o das fases ---
+    // --- Defini√ß√£o das fases ---
     Fase fases[MAX_FASES] = {
         // Fase 1
         {
             .plataformas = {
-                {{   0, 550, LARGURA_TELA,  50 }},  // ch„o
-                {{   0, 400, LARGURA_TELA-100, 20 }},  // plataforma mÈdia
+                {{   0, 550, LARGURA_TELA,  50 }},  // ch√£o
+                {{   0, 400, LARGURA_TELA-100, 20 }},  // plataforma m√©dia
                 {{ 100, 250, LARGURA_TELA-100, 20 }},  // plataforma alta
                 {{ 200, 320, 100, 20 }},               // estreita 1
                 {{ 600, 300, 100, 20 }}                // estreita 2
@@ -140,7 +140,7 @@ int main(void) {
     int        numPerigosAtuais     = 0;
     int        numPortasAtuais      = 0;
 
-    // --- Vari·veis do diamante, do tempo e das estrelas ---
+    // --- Vari√°veis do diamante, do tempo e das estrelas ---
     Rectangle diamante;
     bool      diamanteColetado   = false;
     int       diamantesColetados = 0;
@@ -172,7 +172,7 @@ int main(void) {
 
     // --- Loop principal ---
     while (!WindowShouldClose()) {
-        // --- AtualizaÁ„o ---
+        // --- Atualiza√ß√£o ---
         switch (estadoJogo) {
             case JOGANDO: {
                 // Controles
@@ -188,8 +188,15 @@ int main(void) {
                     meninaAgua.velocidade.y = forcaPulo;
                     meninaAgua.podePular    = false;
                 }
+                if (IsKeyPressed(332)) {
+                    faseAtualIndex++; // AvanÔøΩa para a prÔøΩxima fase
+                    if (faseAtualIndex < numTotalFases) {
+                        // Carrega a prÔøΩxima fase
+                        CarregarFase(fases[faseAtualIndex], &meninoFogo, &meninaAgua, plataformasAtuais, &numPlataformasAtuais, perigosAtuais, &numPerigosAtuais, portasAtuais, &numPortasAtuais);
+                        estadoJogo = JOGANDO;
+                }}
 
-                // FÌsica e colisıes
+                // F√≠sica e colis√µes
                 AtualizarJogador(&meninoFogo, plataformasAtuais, numPlataformasAtuais, gravidade);
                 AtualizarJogador(&meninaAgua, plataformasAtuais, numPlataformasAtuais, gravidade);
                 ResolverColisaoJogadores(&meninoFogo, &meninaAgua);
@@ -205,7 +212,7 @@ int main(void) {
                     }
                 }
 
-                // Colis„o com perigos
+                // Colis√£o com perigos
                 for (int i = 0; i < numPerigosAtuais; i++) {
                     Rectangle recF = { meninoFogo.posicao.x - 10, meninoFogo.posicao.y - 20, 20, 20 };
                     Rectangle recA = { meninaAgua.posicao.x - 10, meninaAgua.posicao.y - 20, 20, 20 };
@@ -219,7 +226,7 @@ int main(void) {
                         estadoJogo = FIM_DE_JOGO;
                 }
 
-                // VitÛria se ambos estiverem nas portas
+                // Vit√≥ria se ambos estiverem nas portas
                 {
                     bool fogoNaPorta = CheckCollisionRecs(
                         (Rectangle){meninoFogo.posicao.x-10, meninoFogo.posicao.y-20,20,20},
@@ -255,7 +262,7 @@ int main(void) {
                 if (!progressoCalculado) {
                     tempoFim = GetTime();
 
-                    // C·lculo de estrelas apenas na Fase 1
+                    // C√°lculo de estrelas apenas na Fase 1
                     if (faseAtualIndex == 0) {
                         double duracao = tempoFim - tempoInicio;
                         if (!diamanteColetado) {
@@ -337,7 +344,7 @@ int main(void) {
                 int boxY = ALTURA_TELA/2 - 80;
                 DrawRectangle(boxX, boxY, boxW, boxH, Fade(BLACK, 0.5f));
 
-                // 2) TÌtulo com sombra
+                // 2) T√≠tulo com sombra
                 const char *titulo = "VITORIA!";
                 int fsTitle = 40;
                 int wTitle  = MeasureText(titulo, fsTitle);
@@ -346,15 +353,15 @@ int main(void) {
                 // Texto dourado
                 DrawText(titulo, LARGURA_TELA/2 - wTitle/2,     ALTURA_TELA/2 - 50,     fsTitle, GOLD);
 
-                // 3) InstruÁ„o para prÛxima fase
+                // 3) Instru√ß√£o para pr√≥xima fase
                 const char *instr = (faseAtualIndex + 1 < numFasesDefinidas)
                     ? "Pressione ENTER para a proxima fase"
-                    : "Parabens! VocÍ completou o jogo!";
+                    : "Parabens! Voc√™ completou o jogo!";
                 int fsInstr = 20;
                 int wInstr  = MeasureText(instr, fsInstr);
                 DrawText(instr, LARGURA_TELA/2 - wInstr/2, ALTURA_TELA/2 - 10, fsInstr, GOLD);
 
-                // 4) EstatÌsticas com fonte maior e em branco
+                // 4) Estat√≠sticas com fonte maior e em branco
                 int fsStat = 28;
                 char buf[64];
                 int y0 = ALTURA_TELA/2 + 30;
