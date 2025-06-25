@@ -107,23 +107,28 @@ int main(void) {
         // Fase 2
         {
             .plataformas = {
-                {{   0, 250, LARGURA_TELA - 100, 20 }},
-                {{ 100, 400, LARGURA_TELA - 100, 20 }},
-                {{   0, 550, LARGURA_TELA,      50 }}
+                {{   0, 550, LARGURA_TELA,  50 }},  // chão
+                {{   0, 400, LARGURA_TELA-100, 20 }},  // plataforma média
+                {{ 100, 250, LARGURA_TELA-100, 20 }},  // plataforma alta
+                {{ 200, 320, 100, 20 }},               // estreita 1
+                {{ 600, 300, 100, 20 }}                // estreita 2
             },
             .perigos = {
-                {{ 300, 230, 150, 20 }, AGUA, SKYBLUE},
-                {{ 300, 380, 150, 20 }, FOGO, RED}
+                {{ 300, 530, 150, 20 }, AGUA, SKYBLUE},
+                {{ 300, 380, 150, 20 }, FOGO, RED},
+                {{ 220, 300,  80, 20 }, AGUA, SKYBLUE},
+                {{ 420, 450, 100, 20 }, FOGO, RED},
+                {{ 350, 490,  80, 20 }, TERRA, GREEN}
             },
             .portas = {
-                {{ LARGURA_TELA - 120, 510, 40, 40 }, JOGADOR_FOGO, (Color){255,100,100,255}},
-                {{ LARGURA_TELA -  70, 510, 40, 40 }, JOGADOR_AGUA, (Color){100,100,255,255}}
+                {{ LARGURA_TELA - 120, 210, 40, 40 }, JOGADOR_FOGO, (Color){255,100,100,255}},
+                {{ LARGURA_TELA -  70, 210, 40, 40 }, JOGADOR_AGUA, (Color){100,100,255,255}}
             },
-            .numPlataformas = 3,
-            .numPerigos     = 2,
+            .numPlataformas = 5,
+            .numPerigos     = 5,
             .numPortas      = 2,
-            .posInicialFogo = {  60, 240 },
-            .posInicialAgua = { 100, 240 }
+            .posInicialFogo = {  60, 540 },
+            .posInicialAgua = { 100, 540 }
         }
     };
     const int numFasesDefinidas = 2;
@@ -188,11 +193,13 @@ int main(void) {
                     meninaAgua.velocidade.y = forcaPulo;
                     meninaAgua.podePular    = false;
                 }
-                if (IsKeyPressed(332)) {
-                    faseAtualIndex++; // Avan�a para a pr�xima fase
-                    if (faseAtualIndex < numTotalFases) {
-                        // Carrega a pr�xima fase
-                        CarregarFase(fases[faseAtualIndex], &meninoFogo, &meninaAgua, plataformasAtuais, &numPlataformasAtuais, perigosAtuais, &numPerigosAtuais, portasAtuais, &numPortasAtuais);
+
+                if (IsKeyPressed(KEY_F1)) {
+                    faseAtualIndex++; // Avanca para a proxima fase
+                    if (faseAtualIndex < numFasesDefinidas) {
+                        // Carrega a proxima fase
+                        CarregarFase(fases[faseAtualIndex], &meninoFogo, &meninaAgua, plataformasAtuais, &numPlataformasAtuais, perigosAtuais,
+                                     &numPerigosAtuais, portasAtuais, &numPortasAtuais);
                         estadoJogo = JOGANDO;
                 }}
 
