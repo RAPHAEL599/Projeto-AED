@@ -106,7 +106,7 @@ void VerificarLimitesEReiniciar(Jogador *fogo, Jogador *agua,Fase fases[], int *
 
 
 int main(void) {
-    InitWindow(LARGURA_TELA, ALTURA_TELA, "Fogo e Água - O Templo Invertido");
+    InitWindow(LARGURA_TELA, ALTURA_TELA, "Fogo e Agua - O Templo Invertido");
 
     Fase fases[MAX_FASES] = {
         // Fase 1
@@ -137,7 +137,7 @@ int main(void) {
                 {{ 600, 200, 200, 20 }}
             },
             .perigos = {
-                {{ 280, 560, 150, 20 }, AGUA, SKYBLUE}, {{ 500, 560, 150, 20 }, FOGO, RED},
+                {{ 260, 560, 150, 20 }, AGUA, SKYBLUE}, {{ 500, 560, 150, 20 }, FOGO, RED},
                 {{ 450, 280, 150, 20 }, TERRA, GREEN }
             },
             .portas = {
