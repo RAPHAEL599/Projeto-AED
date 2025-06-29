@@ -1,3 +1,11 @@
+/*
+TO DO
+- Bug de colisão com partes moveis do cenarios. (Provevelmente vai ficar assim mesmo, lidar com partes moveis é muito complicado)
+- (Cancelado) Add texturas melhores para os jogadores e o cenário. (O Will falou que é mais importante focar nas mecânicas)
+*/
+
+
+// Importes das bibliotecas
 #include "raylib.h"
 #include <stdbool.h>
 #include <stddef.h>
@@ -5,7 +13,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
+
+// Constantes do código
 #define LARGURA_TELA 800
 #define ALTURA_TELA 600
 #define MAX_PLATAFORMAS 20
@@ -15,24 +26,28 @@
 #define MAX_BOTOES 5
 #define MAX_PLATAFORMAS_MOVEIS 5
 
+// Constantes para os estados do jogo.
 typedef enum {
     JOGANDO,
     FIM_DE_JOGO,
     VITORIA
 } EstadoJogo;
 
+// Constantes para os tipos de dano/morte.
 typedef enum {
-    FOGO,
-    AGUA,
-    TERRA
+    FOGO, // Mata somente o cubo azul
+    AGUA, // Mata somente o cubo vermelho
+    TERRA // Mata os 2 cubos
 } TipoPerigo;
 
+// Constantes do jogadores
 typedef enum {
-    JOGADOR_FOGO,
-    JOGADOR_AGUA
+    JOGADOR_FOGO, // Cubo vermelho
+    JOGADOR_AGUA // Cubo azul
 } TipoJogador;
 
-typedef struct Jogador {
+// Estrutura que representa o jogador
+typedef struct {
     TipoJogador tipo;
     Vector2 posicao;
     Vector2 velocidade;
@@ -40,30 +55,35 @@ typedef struct Jogador {
     bool podePular;
 } Jogador;
 
-typedef struct Plataforma {
+// Estrutura para criar uma plataforma
+typedef struct {
     Rectangle retangulo;
 } Plataforma;
 
-typedef struct Perigo {
+// Estrutura para criar algo que mate algum/todos os jogadores
+typedef struct {
     Rectangle retangulo;
     TipoPerigo tipo;
     Color cor;
 } Perigo;
 
-typedef struct Porta {
+// Estrutura para criar o fim da fase
+typedef struct {
     Rectangle retangulo;
-    TipoJogador tipoJogador;
-    Color cor;
+    TipoJogador tipoJogador; // Cor do jogador que deve entrar
+    Color cor; // Cor da porta (Visual)
 } Porta;
 
-typedef struct Botao {
+// Estrutura para criar um botão para ativar objetos móveis das fases
+typedef struct {
     Rectangle retangulo;
-    int idAlvo;
+    int idAlvo; // Id do objeto móvel
     bool pressionado;
     Color cor;
 } Botao;
 
-typedef struct PlataformaMovel {
+// Estrutura para criar um objeto móvel do cenario
+typedef struct {
     Rectangle retangulo;
     Vector2 posInicial;
     Vector2 posFinal;
@@ -71,7 +91,8 @@ typedef struct PlataformaMovel {
     float velocidade;
 } PlataformaMovel;
 
-typedef struct Fase {
+// Estrutura para criar uma fase no jogo
+typedef struct {
     Plataforma plataformas[MAX_PLATAFORMAS];
     Perigo perigos[MAX_PERIGOS];
     Porta portas[MAX_PORTAS];
@@ -88,6 +109,7 @@ typedef struct Fase {
     Rectangle diamante;
 } Fase;
 
+// Prototipo da função para carregar uma fase CUIDADO! (SE TU QUEBRAR ESSA FUNÇÃO DNV TAREK EU TE MATO -Raphael)
 void CarregarFase(Fase fase, Jogador *fogo, Jogador *agua,
                   Plataforma plat[], int *nPlat,
                   Perigo perigos[], int *nPerigos,
@@ -105,6 +127,7 @@ void VerificarLimitesEReiniciar(Jogador *fogo, Jogador *agua,Fase fases[], int *
                                 int *estrelasObtidas, EstadoJogo *estadoJogo);
 
 
+// Parte principal do código
 int main(void) {
     InitWindow(LARGURA_TELA, ALTURA_TELA, "Fogo e Agua - O Templo Invertido");
 
@@ -137,7 +160,7 @@ int main(void) {
                 {{ 600, 200, 200, 20 }}
             },
             .perigos = {
-                {{ 260, 560, 150, 20 }, AGUA, SKYBLUE}, {{ 500, 560, 150, 20 }, FOGO, RED},
+                {{ 260, 560, 150, 20 }, AGUA, SKYBLUE},
                 {{ 450, 280, 150, 20 }, TERRA, GREEN }
             },
             .portas = {
@@ -153,7 +176,7 @@ int main(void) {
                 {{ 300, 370, 20, 100 }, {300, 370}, {300, 270}, false, 1.0f},
                 {{ 500, 430, 50, 20 }, {500, 430}, {500, 220}, false, 1.5f}
             },
-            .numPlataformas = 5, .numPerigos = 3, .numPortas = 2, .numBotoes = 3, .numPlataformasMoveis = 2,
+            .numPlataformas = 5, .numPerigos = 2, .numPortas = 2, .numBotoes = 3, .numPlataformasMoveis = 2,
             .posInicialFogo = { 60, 570 }, .posInicialAgua = { 100, 570 },
             .temDiamante = true, .diamante = { 758, 414, 16, 16 }
         },
@@ -205,11 +228,11 @@ int main(void) {
             .posInicialFogo = { LARGURA_TELA - 50, 490 },
             .posInicialAgua = { 50, 110 },
             .temDiamante = true,
-            .diamante = { 366, 484, 16, 16 }
+            .diamante = { 346, 484, 16, 16 }
         }
     };
 
-    const int numFasesDefinidas = 3;
+    const int numFasesDefinidas = 3; // Define a quantidade de fases que o nosso jogo tem
     int faseAtualIndex = 0;
     EstadoJogo estadoJogo = JOGANDO;
 
@@ -237,6 +260,7 @@ int main(void) {
     bool progressoCalculado = false;
     int estrelasObtidas = 0;
 
+    // Chamada da função para carregar a fase CUIDADO!
     CarregarFase(fases[faseAtualIndex], &meninoFogo, &meninaAgua,
                plataformasAtuais, &numPlataformasAtuais,
                perigosAtuais, &numPerigosAtuais,
@@ -254,11 +278,13 @@ int main(void) {
     const float velocidadeMovimento = 4.0f;
     const float forcaPulo = -5.8f;
 
-    SetTargetFPS(60);
+    SetTargetFPS(60); // Define a quantidade de FPS max do jogo
 
     while (!WindowShouldClose()) {
         switch (estadoJogo) {
             case JOGANDO: {
+
+                // Controles dos jogadores
                  if (IsKeyDown(KEY_A)) meninoFogo.posicao.x -= velocidadeMovimento;
                  if (IsKeyDown(KEY_D)) meninoFogo.posicao.x += velocidadeMovimento;
                  if (IsKeyPressed(KEY_W) && meninoFogo.podePular) {
@@ -271,7 +297,7 @@ int main(void) {
                      meninaAgua.velocidade.y = forcaPulo;
                      meninaAgua.podePular = false;
                  }
-
+                // Tecla de DEBUG para passar uma fase
                 if (IsKeyPressed(KEY_F1)) {
                     faseAtualIndex = (faseAtualIndex + 1) % numFasesDefinidas;
                     CarregarFase(fases[faseAtualIndex], &meninoFogo, &meninaAgua, plataformasAtuais, &numPlataformasAtuais, perigosAtuais,
@@ -282,6 +308,7 @@ int main(void) {
                     tempoInicio = GetTime();
                     progressoCalculado = false;
                     estrelasObtidas = 0;
+                    printf("[DEBUG] Carregando a proxima fase...\n");
                     estadoJogo = JOGANDO;
                 }
 
@@ -387,6 +414,7 @@ int main(void) {
                     if (temDiamanteAtual && !diamanteColetado) {
                         estrelasObtidas = 0;
                     } else {
+                        // Sistema para calcular a quantidade de estrelas que um jogador para por passar de fase
                         if (duracao < 20.0)      estrelasObtidas = 3;
                         else if (duracao < 40.0) estrelasObtidas = 2;
                         else                     estrelasObtidas = 1;
@@ -397,6 +425,7 @@ int main(void) {
                 if (IsKeyPressed(KEY_ENTER)) {
                     faseAtualIndex++;
                     if (faseAtualIndex < numFasesDefinidas) {
+                        printf("[DEBUG] Carregando a fase %d...\n", faseAtualIndex+1);
                         CarregarFase(fases[faseAtualIndex], &meninoFogo, &meninaAgua, plataformasAtuais, &numPlataformasAtuais, perigosAtuais,
                                      &numPerigosAtuais, portasAtuais, &numPortasAtuais, botoesAtuais, &numBotoesAtuais,
                                      plataformasMoveisAtuais, &numPlataformasMoveisAtuais, &temDiamanteAtual, &diamante);
@@ -437,7 +466,7 @@ int main(void) {
 
             DrawText(TextFormat("Fase %d", faseAtualIndex + 1), LARGURA_TELA - 100, 10, 20, LIGHTGRAY);
             if (estadoJogo == JOGANDO) {
-                DrawText("Fogo: WASD | Agua: Setas | F1: Prox Fase", 10, 10, 20, DARKGRAY);
+                DrawText("Fogo: WASD | Agua: Setas", 10, 10, 20, DARKGRAY);
             } else if (estadoJogo == FIM_DE_JOGO) {
                 DrawText("FIM DE JOGO", LARGURA_TELA/2 - MeasureText("FIM DE JOGO",40)/2, ALTURA_TELA/2 - 40, 40, GRAY);
                 DrawText("Pressione ENTER para reiniciar a fase", LARGURA_TELA/2 - MeasureText("Pressione ENTER para reiniciar a fase",20)/2, ALTURA_TELA/2 + 10, 20, GRAY);
@@ -475,6 +504,7 @@ int main(void) {
     return 0;
 }
 
+// Parte do código que cria a função mais importante do jogo CUIDADO! (Especialmente vc Tarek)
 void CarregarFase(Fase fase, Jogador *fogo, Jogador *agua,
                   Plataforma plat[], int *nPlat,
                   Perigo perigos[], int *nPerigos,
@@ -502,6 +532,7 @@ void CarregarFase(Fase fase, Jogador *fogo, Jogador *agua,
     *diamanteRect = fase.diamante;
 }
 
+// Parte do código que cria a função de calcular a colisão dos jogadores com o cenario
 void ResolverColisaoJogadores(Jogador *fogo, Jogador *agua) {
     Rectangle recF = { fogo->posicao.x - 10, fogo->posicao.y - 20, 20, 20 };
     Rectangle recA = { agua->posicao.x - 10, agua->posicao.y - 20, 20, 20 };
@@ -530,6 +561,7 @@ void ResolverColisaoJogadores(Jogador *fogo, Jogador *agua) {
     }
 }
 
+// Parte do código que cria a função para movimentar os cubos/jogadores
 void AtualizarJogador(Jogador *j, Plataforma plat[], int nPlat,
                       PlataformaMovel platMoveis[], int nPlatMoveis,
                       float gravidade) {
@@ -583,7 +615,7 @@ void AtualizarJogador(Jogador *j, Plataforma plat[], int nPlat,
         }
     }
 
-    // Colisão horizontal com plataformas estáticas ---
+    // Colisão horizontal com plataformas estáticas
     {
         // Usa o mesmo rec de colisão
         Rectangle rec2 = rec;
@@ -603,7 +635,7 @@ void AtualizarJogador(Jogador *j, Plataforma plat[], int nPlat,
         }
     }
 
-    // Colisão horizontal com plataformas móveis ---
+    // Colisão horizontal com plataformas móveis (Semi quebrado, tem bugs nessa parte aqui)
     {
         float w2 = 20.0f, h2 = 20.0f;
         Rectangle rec2 = { j->posicao.x - w2/2, j->posicao.y - h2, w2, h2 };
@@ -611,8 +643,6 @@ void AtualizarJogador(Jogador *j, Plataforma plat[], int nPlat,
             Rectangle p = platMoveis[i].retangulo;
             if (CheckCollisionRecs(rec2, p)) {
                 Rectangle overlap = GetCollisionRec(rec2, p);
-                // Se a sobreposição horizontal for menor que a vertical,
-                // ajusta a posição X para fora da plataforma
                 if (overlap.width < overlap.height) {
                     if (rec2.x < p.x) {
                         j->posicao.x -= overlap.width;
@@ -625,6 +655,7 @@ void AtualizarJogador(Jogador *j, Plataforma plat[], int nPlat,
     }
 }
 
+// Função para impedir do jogador de sair do limite da tela
 void VerificarLimitesEReiniciar(
     Jogador *fogo, Jogador *agua,
     Fase fases[], int *faseAtualIndex,
@@ -638,8 +669,8 @@ void VerificarLimitesEReiniciar(
     double *tempoInicio, bool *progressoCalculado, int *estrelasObtidas,
     EstadoJogo *estadoJogo)
 {
-    const float halfW = 10.0f;  // metado da largura do sprite
-    const float halfH = 20.0f;  // altura do sprite
+    const float halfW = 10.0f;
+    const float halfH = 20.0f;
 
     // paredes invisíveis (laterais e teto) para Fogo
     if (fogo->posicao.x < halfW)                   fogo->posicao.x = halfW;
@@ -656,7 +687,7 @@ void VerificarLimitesEReiniciar(
         agua->velocidade.y = 0;
     }
 
-    // se qualquer jogador “cair” (y > ALTURA_TELA), reinicia a fase
+    // se qualquer jogador cair reinicia a fase
     if (fogo->posicao.y > ALTURA_TELA || agua->posicao.y > ALTURA_TELA) {
         CarregarFase(
             fases[*faseAtualIndex], fogo, agua,
