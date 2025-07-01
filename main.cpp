@@ -1,22 +1,18 @@
 /*
 TO DO
-- Bug de colis√£o com partes moveis do cenarios. (Provevelmente vai ficar assim mesmo, lidar com partes moveis √© muito complicado)
-- (Cancelado) Add texturas melhores para os jogadores e o cen√°rio. (O Will falou que √© mais importante focar nas mec√¢nicas)
+- Bug de colis„o com partes moveis do cenarios. (Provevelmente vai ficar assim mesmo, lidar com partes moveis È muito complicado)
+- (Cancelado) Add texturas melhores para os jogadores e o cen·rio. (O Will falou que È mais importante focar nas mec‚nicas)
 */
 
 
-// Importes das bibliotecas
+// Imports das bibliotecas
 #include "raylib.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <math.h>
 #include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
 
-
-// Constantes do c√≥digo
+// Constantes do cÛdigo
 #define LARGURA_TELA 800
 #define ALTURA_TELA 600
 #define MAX_PLATAFORMAS 20
@@ -74,15 +70,15 @@ typedef struct {
     Color cor; // Cor da porta (Visual)
 } Porta;
 
-// Estrutura para criar um bot√£o para ativar objetos m√≥veis das fases
+// Estrutura para criar um bot„o para ativar objetos mÛveis das fases
 typedef struct {
     Rectangle retangulo;
-    int idAlvo; // Id do objeto m√≥vel
+    int idAlvo; // Id do objeto mÛvel
     bool pressionado;
     Color cor;
 } Botao;
 
-// Estrutura para criar um objeto m√≥vel do cenario
+// Estrutura para criar um objeto mÛvel do cenario
 typedef struct {
     Rectangle retangulo;
     Vector2 posInicial;
@@ -109,7 +105,7 @@ typedef struct {
     Rectangle diamante;
 } Fase;
 
-// Prototipo da fun√ß√£o para carregar uma fase CUIDADO! (SE TU QUEBRAR ESSA FUN√á√ÉO DNV TAREK EU TE MATO -Raphael)
+// Prototipo da funÁ„o para carregar uma fase CUIDADO! (SE TU QUEBRAR ESSA FUN«√O DNV TAREK EU TE MATO -Raphael)
 void CarregarFase(Fase fase, Jogador *fogo, Jogador *agua,
                   Plataforma plat[], int *nPlat,
                   Perigo perigos[], int *nPerigos,
@@ -127,8 +123,8 @@ void VerificarLimitesEReiniciar(Jogador *fogo, Jogador *agua,Fase fases[], int *
                                 int *estrelasObtidas, EstadoJogo *estadoJogo);
 
 
-// Parte principal do c√≥digo
-int main(void) {
+// Parte principal do cÛdigo
+int main() {
     InitWindow(LARGURA_TELA, ALTURA_TELA, "Fogo e Agua - O Templo Invertido");
 
     Fase fases[MAX_FASES] = {
@@ -150,7 +146,7 @@ int main(void) {
             },
             .numPlataformas = 5, .numPerigos = 5, .numPortas = 2, .numBotoes = 0, .numPlataformasMoveis = 0,
             .posInicialFogo = { 60, 540 }, .posInicialAgua = { 100, 540 },
-            .temDiamante = true, .diamante = { 600 + 50 - 8, 300 - 16, 16, 16 }
+            .temDiamante = true, .diamante = { 642, 284, 16, 16 }
         },
         // Fase 2
         {
@@ -183,20 +179,20 @@ int main(void) {
         // FASE 3
         {
             .plataformas = {
-                // Se√ß√£o da √Ågua (Superior Esquerda)
-                { { 0, 120, 150, 20 } },    // 1. In√≠cio √Ågua
-                { { 200, 180, 150, 20 } },  // 2. Ap√≥s a primeira ponte
-                // Se√ß√£o do Fogo (Inferior Direita)
-                { { LARGURA_TELA - 150, 500, 150, 20 } }, // 3. In√≠cio Fogo
-                { { LARGURA_TELA - 350, 420, 150, 20 } }, // 4. Ap√≥s a primeira ponte
-                // Se√ß√£o Central (Encontro)
+                // SeÁ„o da ¡gua (Superior Esquerda)
+                { { 0, 120, 150, 20 } },    // 1. InÌcio ¡gua
+                { { 200, 180, 150, 20 } },  // 2. ApÛs a primeira ponte
+                // SeÁ„o do Fogo (Inferior Direita)
+                { { LARGURA_TELA - 150, 500, 150, 20 } }, // 3. InÌcio Fogo
+                { { LARGURA_TELA - 350, 420, 150, 20 } }, // 4. ApÛs a primeira ponte
+                // SeÁ„o Central (Encontro)
                 { { 300, 320, 150, 20 } },  // 5. Plataforma central das portas
-                { { 0, 280, 100, 20 } },     // 6. Plataforma do bot√£o do diamante
+                { { 0, 280, 100, 20 } },     // 6. Plataforma do bot„o do diamante
                 { { 350, 520, 50, 20 } },
-                { { 140, 180, 20, 140} } //8. Plataforma que impede que o player azul pegue um caminho alternativo para o bot√£o do diamante
+                { { 140, 180, 20, 140} } //8. Plataforma que impede que o player azul pegue um caminho alternativo para o bot„o do diamante
             },
             .perigos = {
-                // Perigos da √Ågua
+                // Perigos da ¡gua
                 { { 150, 120, 50, 20 }, FOGO, RED },
                 // Perigos do Fogo
                 { { LARGURA_TELA - 200, 500, 50, 20 }, AGUA, SKYBLUE},
@@ -208,27 +204,20 @@ int main(void) {
                 { { 395, 280, 40, 40 }, JOGADOR_AGUA, (Color){100,100,255,255} }
             },
             .botoes = {
-                // Bot√µes de progress√£o cruzada
-                { { 700, 480, 50, 10 }, .idAlvo = 0, .pressionado = false, .cor = ORANGE },   // Fogo ajuda √Ågua
-                // Bot√£o do diamante (cooperativo)
+                // Botıes de progress„o cruzada
+                { { 700, 480, 50, 10 }, .idAlvo = 0, .pressionado = false, .cor = ORANGE },   // Fogo ajuda ¡gua
+                // Bot„o do diamante (cooperativo)
                 { { 40, 260, 50, 10 }, .idAlvo = 1, .pressionado = false, .cor = PURPLE }
             },
             .plataformasMoveis = {
-                // Plataformas de progress√£o
-                //{ .retangulo = {LARGURA_TELA - 250, 480, 100, 20}, .posInicial = {LARGURA_TELA - 250, 520}, .posFinal = {LARGURA_TELA - 250, 480}, .ativa = false, .velocidade = 0.8f}, // Ponte para Fogo
-                { .retangulo = {150, 160, 100, 20}, .posInicial = {100, 160}, .posFinal = {200, 160}, .ativa = false, .velocidade = 1.0f}, // Ponte para √Ågua
+                // Plataformas de progress„o
+                { .retangulo = {150, 160, 100, 20}, .posInicial = {100, 160}, .posFinal = {200, 160}, .ativa = false, .velocidade = 1.0f}, // Ponte para ¡gua
                 // Plataforma do diamante
                 { .retangulo = { 370, 200, 20, 200}, .posInicial = {370, 340}, .posFinal = {370, 280}, .ativa = false, .velocidade = 2.0f} // Porta do diamante
             },
-            .numPlataformas = 8,
-            .numPerigos = 3,
-            .numPortas = 2,
-            .numBotoes = 3,
-            .numPlataformasMoveis = 3,
-            .posInicialFogo = { LARGURA_TELA - 50, 490 },
-            .posInicialAgua = { 50, 110 },
-            .temDiamante = true,
-            .diamante = { 346, 484, 16, 16 }
+            .numPlataformas = 8,.numPerigos = 3,.numPortas = 2,.numBotoes = 3,.numPlataformasMoveis = 3,
+            .posInicialFogo = { LARGURA_TELA - 50, 490 },.posInicialAgua = { 50, 110 },
+            .temDiamante = true,.diamante = { 346, 484, 16, 16 }
         }
     };
 
@@ -260,7 +249,7 @@ int main(void) {
     bool progressoCalculado = false;
     int estrelasObtidas = 0;
 
-    // Chamada da fun√ß√£o para carregar a fase CUIDADO!
+    // Chamada da funÁ„o para carregar a fase CUIDADO!
     CarregarFase(fases[faseAtualIndex], &meninoFogo, &meninaAgua,
                plataformasAtuais, &numPlataformasAtuais,
                perigosAtuais, &numPerigosAtuais,
@@ -278,7 +267,7 @@ int main(void) {
     const float velocidadeMovimento = 4.0f;
     const float forcaPulo = -5.8f;
 
-    SetTargetFPS(60); // Define a quantidade de FPS max do jogo
+    SetTargetFPS(60);
 
     while (!WindowShouldClose()) {
         switch (estadoJogo) {
@@ -504,7 +493,7 @@ int main(void) {
     return 0;
 }
 
-// Parte do c√≥digo que cria a fun√ß√£o mais importante do jogo CUIDADO! (Especialmente vc Tarek)
+// Parte do cÛdigo que cria a funÁ„o mais importante do jogo CUIDADO! (Especialmente vc Tarek)
 void CarregarFase(Fase fase, Jogador *fogo, Jogador *agua,
                   Plataforma plat[], int *nPlat,
                   Perigo perigos[], int *nPerigos,
@@ -532,7 +521,7 @@ void CarregarFase(Fase fase, Jogador *fogo, Jogador *agua,
     *diamanteRect = fase.diamante;
 }
 
-// Parte do c√≥digo que cria a fun√ß√£o de calcular a colis√£o dos jogadores com o cenario
+// Parte do cÛdigo que cria a funÁ„o de calcular a colis„o dos jogadores com o cenario
 void ResolverColisaoJogadores(Jogador *fogo, Jogador *agua) {
     Rectangle recF = { fogo->posicao.x - 10, fogo->posicao.y - 20, 20, 20 };
     Rectangle recA = { agua->posicao.x - 10, agua->posicao.y - 20, 20, 20 };
@@ -561,39 +550,39 @@ void ResolverColisaoJogadores(Jogador *fogo, Jogador *agua) {
     }
 }
 
-// Parte do c√≥digo que cria a fun√ß√£o para movimentar os cubos/jogadores
+// Parte do cÛdigo que cria a funÁ„o para movimentar os cubos/jogadores
 void AtualizarJogador(Jogador *j, Plataforma plat[], int nPlat,
                       PlataformaMovel platMoveis[], int nPlatMoveis,
                       float gravidade) {
-    // Movimento e gravidade
+    // Movimento horizontal e gravidade
     j->posicao.x += j->velocidade.x;
     j->velocidade.y += gravidade;
     j->posicao.y += j->velocidade.y;
 
-    // Define ret√¢ngulo de colis√£o do jogador
+    // Define ret‚ngulo de colis„o do jogador
     float h = 20.0f, w = 20.0f;
     Rectangle rec = { j->posicao.x - w/2, j->posicao.y - h, w, h };
     j->podePular = false;
 
-    // Colis√£o vertical com plataformas est√°ticas
+    // Colis„o vertical com plataformas est·ticas
     for (int i = 0; i < nPlat; i++) {
         Rectangle p = plat[i].retangulo;
         if (CheckCollisionRecs(rec, p)) {
-            // Descendo sobre a plataforma?
+            // Descendo sobre a plataforma
             if (j->velocidade.y > 0 && (rec.y + h - j->velocidade.y) <= p.y) {
                 j->posicao.y = p.y;
                 j->velocidade.y = 0;
                 j->podePular = true;
             }
-            // Batendo de baixo na plataforma?
+            // Batendo de baixo na plataforma
             else if (j->velocidade.y < 0 && rec.y > (p.y + p.height - 5)) {
                 j->posicao.y = p.y + p.height + h;
-                j->velocidade.y = 0;
+                j->velocidade.y = 0; // ñ Zera velocidade pra n„o ìgrudarî no teto
             }
         }
     }
 
-    // Colis√£o vertical com plataformas m√≥veis
+    // Colis„o vertical com plataformas mÛveis
     for (int i = 0; i < nPlatMoveis; i++) {
         Rectangle p = platMoveis[i].retangulo;
         if (CheckCollisionRecs(rec, p)) {
@@ -615,15 +604,15 @@ void AtualizarJogador(Jogador *j, Plataforma plat[], int nPlat,
         }
     }
 
-    // Colis√£o horizontal com plataformas est√°ticas
+    // Colis„o horizontal com plataformas est·ticas
     {
-        // Usa o mesmo rec de colis√£o
+        // Usa o mesmo rec de colis„o
         Rectangle rec2 = rec;
         for (int i = 0; i < nPlat; i++) {
             Rectangle p = plat[i].retangulo;
             if (CheckCollisionRecs(rec2, p)) {
                 Rectangle overlap = GetCollisionRec(rec2, p);
-                // Se a penetra√ß√£o horizontal for menor que a vertical,
+                // Se a penetraÁ„o horizontal for menor que a vertical,
                 // corrige apenas no eixo X
                 if (overlap.width < overlap.height) {
                     if (rec2.x < p.x)
@@ -635,7 +624,7 @@ void AtualizarJogador(Jogador *j, Plataforma plat[], int nPlat,
         }
     }
 
-    // Colis√£o horizontal com plataformas m√≥veis (Semi quebrado, tem bugs nessa parte aqui)
+    // Colis„o horizontal com plataformas mÛveis (Semi quebrado, tem bugs nessa parte aqui)
     {
         float w2 = 20.0f, h2 = 20.0f;
         Rectangle rec2 = { j->posicao.x - w2/2, j->posicao.y - h2, w2, h2 };
@@ -655,7 +644,7 @@ void AtualizarJogador(Jogador *j, Plataforma plat[], int nPlat,
     }
 }
 
-// Fun√ß√£o para impedir do jogador de sair do limite da tela
+// FunÁ„o para impedir do jogador de sair do limite da tela
 void VerificarLimitesEReiniciar(
     Jogador *fogo, Jogador *agua,
     Fase fases[], int *faseAtualIndex,
@@ -672,14 +661,14 @@ void VerificarLimitesEReiniciar(
     const float halfW = 10.0f;
     const float halfH = 20.0f;
 
-    // paredes invis√≠veis (laterais e teto) para Fogo
+    // paredes invisÌveis (laterais e teto) para Fogo
     if (fogo->posicao.x < halfW)                   fogo->posicao.x = halfW;
     if (fogo->posicao.x > LARGURA_TELA - halfW)    fogo->posicao.x = LARGURA_TELA - halfW;
     if (fogo->posicao.y < halfH) {
         fogo->posicao.y = halfH;
         fogo->velocidade.y = 0;
     }
-    // paredes invis√≠veis para √Ågua
+    // paredes invisÌveis para ¡gua
     if (agua->posicao.x < halfW)                   agua->posicao.x = halfW;
     if (agua->posicao.x > LARGURA_TELA - halfW)    agua->posicao.x = LARGURA_TELA - halfW;
     if (agua->posicao.y < halfH) {
@@ -706,4 +695,3 @@ void VerificarLimitesEReiniciar(
         *estadoJogo         = JOGANDO;
     }
 }
-
